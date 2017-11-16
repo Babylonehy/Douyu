@@ -102,15 +102,10 @@ def connectdanmuserver(room_id):
             output = open(str(room_id)+'danmu.txt', 'a+')
             try:
                 print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
-<<<<<<< HEAD
                 print("[{}]: {}".format( nn.decode(), txt.decode().strip()),file=output)
                 #output.write(txt.decode().strip()+'\n')
                 #output.close()
             except UnicodeDecodeError as e:   #斗鱼有些表情会引发unicode编码错误
-=======
-            except UnicodeDecodeError as e:
-                # 斗鱼有些表情会引发unicode编码错误
->>>>>>> 2193458cdb02af0b72ae6a46a23f03f519fd30be
                 print(e)
             
     
