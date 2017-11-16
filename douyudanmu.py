@@ -9,12 +9,16 @@ Created on Thu Nov 16 15:08:52 2017
 import requests
 import json
 
-import multiprocessing
 import socket
 import time
 import re
 
 from threading import Thread
+
+
+
+
+
 
 def room_info(room_id):
     url='http://open.douyucdn.cn/api/RoomApi/room/'+str(room_id)
@@ -59,8 +63,6 @@ def room_info(room_id):
 
 
 '''
-连接弹幕服务器
-
     弹幕服务器地址  端口
     danmu.douyutv.com:8061
     anmu.douyutv.com:8062
@@ -85,6 +87,7 @@ def sendmsg(msgstr):
     client.send(msg)      #发送消息请求
 
 def connectdanmuserver(room_id):
+
     if(room_info(room_id)==1):
          return 0
     print('------------弹幕服务器连接中----------',)
@@ -96,11 +99,20 @@ def connectdanmuserver(room_id):
     while True:  
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
         for nn, txt, level in pattern.findall(data):
+            output = open(str(room_id)+'danmu.txt', 'a+')
             try:
                 print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
+<<<<<<< HEAD
+                print("[{}]: {}".format( nn.decode(), txt.decode().strip()),file=output)
+                #output.write(txt.decode().strip()+'\n')
+                #output.close()
+            except UnicodeDecodeError as e:   #斗鱼有些表情会引发unicode编码错误
+=======
             except UnicodeDecodeError as e:
                 # 斗鱼有些表情会引发unicode编码错误
+>>>>>>> 2193458cdb02af0b72ae6a46a23f03f519fd30be
                 print(e)
+            
     
 def keeplive():
     while True:
@@ -117,5 +129,5 @@ if __name__ == '__main__':
     t2 = Thread(target=keeplive)
     t1.start()
     t2.start()   
-    
+    #wordcloud(room_id)
 
