@@ -97,7 +97,7 @@ def connectdanmuserver(room_id):
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
         for nn, txt, level in pattern.findall(data):
             try:
-                print("[lv.{:0<2}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
+                print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
             except UnicodeDecodeError as e:
                 # 斗鱼有些表情会引发unicode编码错误
                 print(e)
