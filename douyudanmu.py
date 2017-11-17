@@ -12,13 +12,9 @@ import json
 import socket
 import time
 import re
+import os
 
 from threading import Thread
-
-
-
-
-
 
 def room_info(room_id):
     url='http://open.douyucdn.cn/api/RoomApi/room/'+str(room_id)
@@ -59,8 +55,6 @@ def room_info(room_id):
               '游戏分类:'+str(cate_name),
               '在线人数:'+str(online),
               '关注人数:'+str(fans_num))
-        
-
 
 '''
     弹幕服务器地址  端口
@@ -71,7 +65,6 @@ def room_info(room_id):
     第三方接入弹幕服务器列表
     IP 地址：openbarrage.douyutv.com
     端口：8601
-
 '''
 client= socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 Host='openbarrage.douyutv.com' 
@@ -87,7 +80,7 @@ def sendmsg(msgstr):
     client.send(msg)      #发送消息请求
 
 def connectdanmuserver(room_id):
-
+    d = os.path.dirname(__file__)# 获取当前文件路径
     if(room_info(room_id)==1):
          return 0
     print('------------弹幕服务器连接中----------',)
@@ -99,14 +92,16 @@ def connectdanmuserver(room_id):
     while True:  
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
         for nn, txt, level in pattern.findall(data):
-            output = open(str(room_id)+'danmu.txt', 'a+')
+            output = open(d+'\弹幕'+'\\'+str(room_id)+'danmu.txt', 'a+')
             try:
-                print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip()))
-                print("[{}]: {}".format( nn.decode(), txt.decode().strip()),file=output)
+                print("[lv.{}][{}]: {} [{}]".format(level.decode(), nn.decode(), txt.decode().strip(), time.strftime("%Y-%m-%d %H:%M:%S")))
+                print("{}:{}".format( nn.decode(), txt.decode().strip()),file=output)
                 #output.write(txt.decode().strip()+'\n')
                 #output.close()
-            except UnicodeDecodeError as e:   #斗鱼有些表情会引发unicode编码错误
-                print(e)
+            except:
+                pass
+            #UnicodeDecodeError as e:   #斗鱼有些表情会引发unicode编码错误
+            #print(e)
             
     
 def keeplive():
@@ -117,6 +112,7 @@ def keeplive():
         time.sleep(10)
    
 if __name__ == '__main__':
+
     room_id = input('请输入房间号:')
     #room_id=687423
     #connectdanmuserver(room_id)
