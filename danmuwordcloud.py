@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Nov 17 00:02:49 2017
@@ -16,8 +16,8 @@ from PIL import Image
 
 def wordcloud(room_id):
     d = os.path.dirname(__file__)# 获取当前文件路径
-    #with open(str(room_id)+'danmu.txt','r',encoding='utf-8') as f:
-    with open(d+'\弹幕'+'\\'+str(room_id)+'danmu.txt','r',encoding='ANSI') as f:
+    with open(d+'/弹幕'+'//'+str(room_id)+'danmu.txt','r',encoding='utf-8') as f:
+    #with open(d+'\弹幕'+'\\'+str(room_id)+'danmu.txt','r',encoding='ANSI') as f:
         text = f.read()
         f.close()
     cut_text = "\n".join(jieba.cut(text))  #使用空格连接 进行中文分词
@@ -49,7 +49,7 @@ def wordcloud(room_id):
     plt.axis('off')                     # 关闭坐标轴
     plt.show()                          # 展示图片
     
-    cloud.to_file(os.path.join(d+'\词云', '['+str(room_id)+']'+mask_name))  # 图片大小将会按照 mask 保存
+    cloud.to_file(os.path.join(d+'/词云', '['+str(room_id)+']'+mask_name))  # 图片大小将会按照 mask 保存
     
 if __name__ == '__main__':
     room_id = input('请输入房间号:')

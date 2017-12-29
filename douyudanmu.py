@@ -13,6 +13,7 @@ import socket
 import time
 import re
 import os
+import codecs
 
 from threading import Thread
 
@@ -88,13 +89,25 @@ def connectdanmuserver(room_id):
     sendmsg(msg)
     join_room_msg = 'type@=joingroup/rid@={}/gid@=-9999/\x00'.format(room_id) #加入房间分组消息  
     sendmsg(join_room_msg)  
-    pattern = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
+    chatmsg = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
+    gift=re.compile(b'type@=spbc/.+?/gid@=(.+?)/gfid@=(.+?)/sn@=(.+?)/dn@=(.+?)/gn@=(.+?)/gc@=(.+?)/gb@=(.+?)/es@=(.+?)/gfid@=(.+?)/eid@=(.+?)/')
+    with codecs.open(d+'/speciallist.txt', 'r', 'utf-8') as f:
+        speciallist = f.read()
+        print (speciallist)
+    #687speciallist=['炮炮66的迷妹',]
     while True:  
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
-        for nn, txt, level in pattern.findall(data):
-            output = open(d+'\弹幕'+'\\'+str(room_id)+'danmu.txt', 'a+')
+        for gfid in gift.findall(data):
+            print('【礼物】'+gfid)
+        for nn, txt, level in chatmsg.findall(data):
+            output = open(d+'/弹幕'+'//'+str(room_id)+'danmu.txt', 'a+')
             try:
-                print("[lv.{}][{}]: {} [{}]".format(level.decode(), nn.decode(), txt.decode().strip(), time.strftime("%Y-%m-%d %H:%M:%S")))
+                if(nn.decode() in speciallist):
+                    print('---------------------------------------')        
+                #print("[lv.{}][{}]: {} [{}]".format(level.decode(), nn.decode(), txt.decode().strip(), time.strftime("%Y-%m-%d %H:%M:%S")))
+                print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip(),))
+                if(nn.decode() in speciallist):
+                    print('---------------------------------------')
                 print("{}:{}".format( nn.decode(), txt.decode().strip()),file=output)
                 #output.write(txt.decode().strip()+'\n')
                 #output.close()
