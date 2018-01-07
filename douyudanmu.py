@@ -82,6 +82,7 @@ def sendmsg(msgstr):
 
 def connectdanmuserver(room_id):
     d = os.path.dirname(__file__)# 获取当前文件路径
+    isexist(d+'/弹幕'+'//'+str(room_id)+'danmuass.txt')
     if(room_info(room_id)==1):
          return 0
     print('------------弹幕服务器连接中----------',)
@@ -90,22 +91,21 @@ def connectdanmuserver(room_id):
     join_room_msg = 'type@=joingroup/rid@={}/gid@=-9999/\x00'.format(room_id) #加入房间分组消息  
     sendmsg(join_room_msg)  
     chatmsg = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
-    gift=re.compile(b'type@=spbc/.+?/gid@=(.+?)/gfid@=(.+?)/sn@=(.+?)/dn@=(.+?)/gn@=(.+?)/gc@=(.+?)/gb@=(.+?)/es@=(.+?)/gfid@=(.+?)/eid@=(.+?)/')
     with codecs.open(d+'/speciallist.txt', 'r', 'utf-8') as f:
         speciallist = f.read()
         print (speciallist)
-    #687speciallist=['炮炮66的迷妹',]
+    time_start=time.time()
     while True:  
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
-        for gfid in gift.findall(data):
-            print('【礼物】'+gfid)
+        outputass = open(d+'/弹幕'+'//'+str(room_id)+'danmuass.txt', 'a+')
+        output = open(d+'/弹幕'+'//'+str(room_id)+'danmu.txt', 'a+')
         for nn, txt, level in chatmsg.findall(data):
-            output = open(d+'/弹幕'+'//'+str(room_id)+'danmu.txt', 'a+')
             try:
                 if(nn.decode() in speciallist):
                     print('---------------------------------------')        
                 #print("[lv.{}][{}]: {} [{}]".format(level.decode(), nn.decode(), txt.decode().strip(), time.strftime("%Y-%m-%d %H:%M:%S")))
                 print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip(),))
+                outputass.write("{}|{}\n".format(time.time()-time_start,txt.decode().strip()))
                 if(nn.decode() in speciallist):
                     print('---------------------------------------')
                 print("{}:{}".format( nn.decode(), txt.decode().strip()),file=output)
@@ -123,7 +123,11 @@ def keeplive():
         msg = 'type@=mrkl/\x00'
         sendmsg(msg)
         time.sleep(10)
-   
+def isexist(path):
+    isExists=os.path.exists(path)
+    if (isExists==True):
+        print('删除原弹幕文件')
+        os.remove(path)
 if __name__ == '__main__':
 
     room_id = input('请输入房间号:')
