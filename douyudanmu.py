@@ -14,6 +14,7 @@ import time
 import re
 import os
 import codecs
+from termcolor import colored
 
 from threading import Thread
 
@@ -37,11 +38,13 @@ def room_info(room_id):
         owner_name=roominfo['data']['owner_name']
         online=roominfo['data']['online']
         fans_num=roominfo['data']['fans_num']
+        hot=roominfo['data']['hn']
         print('主播 '+str(owner_name)+' 未开播!',)
         print('房间名:'+str(room_name),
               '主播ID:'+str(owner_name),
               '游戏分类:'+str(cate_name),
               '在线人数:'+str(online),
+              '热度:'+str(hot),
               '关注人数:'+str(fans_num))
         return 1
     else:
@@ -51,12 +54,20 @@ def room_info(room_id):
         owner_name=roominfo['data']['owner_name']
         online=roominfo['data']['online']
         fans_num=roominfo['data']['fans_num']
+        hot=roominfo['data']['hn']
+        #statuestitle='房间名:'+str(room_name)+'主播ID:'+str(owner_name)+'游戏分类:'+str(cate_name)+'在线人数:'+str(online)+'热度:'+str(hot)+'关注人数:'+str(fans_num)
         print('房间名:'+str(room_name),
               '主播ID:'+str(owner_name),
               '游戏分类:'+str(cate_name),
-              '在线人数:'+str(online),
-              '关注人数:'+str(fans_num))
-
+              colored('在线人数:'+str(online),'green'),
+              colored('热度:'+str(hot),'red'),
+              colored('关注人数:'+str(fans_num),'green'))
+        print('------------读取礼物列表------------')
+        global giftlist
+        giftlist={}
+        for each in roominfo['data']['gift']:
+            giftlist[each['id']]=each['name']
+            print(each['id'], giftlist[each['id']])
 '''
     弹幕服务器地址  端口
     danmu.douyutv.com:8061
@@ -80,17 +91,23 @@ def sendmsg(msgstr):
     client.send(msgHead)  #发送协议头
     client.send(msg)      #发送消息请求
 
-def connectdanmuserver(room_id):
+def connectdanmuserver(room_id,opengift='0',enterroom='0'):
     d = os.path.dirname(__file__)# 获取当前文件路径
     isexist(d+'/弹幕'+'//'+str(room_id)+'danmuass.txt')
     if(room_info(room_id)==1):
          return 0
+    if (opengift=='1'):
+        print(colored('------------礼物已开启------------','red'))
+    if (enterroom=='1'):
+        print(colored('------------进房提醒已开启------------','red'))
     print('------------弹幕服务器连接中----------',)
     msg = 'type@=loginreq/roomid@={}/\x00'.format(room_id)
     sendmsg(msg)
     join_room_msg = 'type@=joingroup/rid@={}/gid@=-9999/\x00'.format(room_id) #加入房间分组消息  
     sendmsg(join_room_msg)  
-    chatmsg = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/')
+    chatmsg = re.compile(b'type@=chatmsg/.+?/nn@=(.+?)/txt@=(.+?)/.+?/level@=(.+?)/.+?/bnn@=(.+?)/bl@=(.+?)/.+?')
+    dgb=re.compile(b'type@=dgb/.+?/gfid@=(.+?)/.+?/nn@=(.+?)/.+?')
+    uenter=re.compile(b'type@=uenter/.+?/nn@=(.+?)/.+?')
     with codecs.open(d+'/speciallist.txt', 'r', 'utf-8') as f:
         speciallist = f.read()
         print (speciallist)
@@ -99,24 +116,52 @@ def connectdanmuserver(room_id):
         data = client.recv(1024)  #这个data就是服务器向客户端发送的消息
         outputass = open(d+'/弹幕'+'//'+str(room_id)+'danmuass.txt', 'a+')
         output = open(d+'/弹幕'+'//'+str(room_id)+'danmu.txt', 'a+')
-        for nn, txt, level in chatmsg.findall(data):
+        #print(data)
+        #print(chatmsg.findall(data))
+        #print(dgb.findall(data))
+        
+        if (opengift=='1'):  
+            for gfid,nn in dgb.findall(data):
+                if (gfid.decode() in giftlist):
+                    giftid=str(gfid.decode())
+                    try:
+                        print(colored("---[{}]送出----{}---".format(nn.decode(),giftlist[giftid]),'red'))
+                    except:
+                        print('-------礼物 Decode error---------')
+                        pass
+        if (enterroom=='1'):
+            #print(data)
+            for nn in uenter.findall(data):
+                    try:
+                        print(colored("---【{}】进入房间---".format(nn.decode()),'green','on_blue'),'\n')
+                    except:
+                        print('-------进房 Decode error---------')
+                        pass
+            
+        for nn,txt,level,bnn,bl in chatmsg.findall(data):
             try:
                 if(nn.decode() in speciallist):
-                    print('---------------------------------------')        
+                    print(colored('---------------------------------------','green'))
+                if (bl.decode()!='0'):
+                    if(nn.decode() in speciallist):
+                        print(colored("[{}({})][lv.{}][{}]: {} ".format(bnn.decode(),bl.decode(),level.decode(),nn.decode(), txt.decode().strip(),),'white','on_magenta',attrs=['reverse', 'blink','bold']))
+                    else:
+                        print("[{}({})][lv.{}][{}]: {} ".format(bnn.decode(),bl.decode(),level.decode(),nn.decode(), txt.decode().strip(),))
+                else:
+                    print("[lv.{}][{}]: {} ".format(level.decode(),nn.decode(), txt.decode().strip(),))
                 #print("[lv.{}][{}]: {} [{}]".format(level.decode(), nn.decode(), txt.decode().strip(), time.strftime("%Y-%m-%d %H:%M:%S")))
-                print("[lv.{}][{}]: {}".format(level.decode(), nn.decode(), txt.decode().strip(),))
                 outputass.write("{}|{}\n".format(time.time()-time_start,txt.decode().strip()))
                 if(nn.decode() in speciallist):
-                    print('---------------------------------------')
+                    print(colored('---------------------------------------','green'))
                 print("{}:{}".format( nn.decode(), txt.decode().strip()),file=output)
                 #output.write(txt.decode().strip()+'\n')
                 #output.close()
             except:
+                #print('-------弹幕 Decode error---------')
                 pass
             #UnicodeDecodeError as e:   #斗鱼有些表情会引发unicode编码错误
             #print(e)
             
-    
 def keeplive():
     while True:
         #msg='type@=keeplive/tick@={}/\x00'.format(int(time.time()))
@@ -131,9 +176,11 @@ def isexist(path):
 if __name__ == '__main__':
 
     room_id = input('请输入房间号:')
+    opengift=input('是否开启礼物(默认0 不能 1 能):')
+    enterroom=input('是否开启进房提醒(默认0 不能 1 能):')
     #room_id=687423
     #connectdanmuserver(room_id)
-    t1 = Thread(target=connectdanmuserver,args=(room_id,))
+    t1 = Thread(target=connectdanmuserver,args=(room_id,opengift,enterroom))
     t2 = Thread(target=keeplive)
     t1.start()
     t2.start()   

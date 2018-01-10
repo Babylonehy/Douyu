@@ -10,10 +10,10 @@ import numpy
 import random
 import os
 
-def danmutoass(dirt):
+def danmutoass(dirt,delay=8):
     dirthead='/Users/lixiang/iCollections/Programe/Github/douyudanmu/弹幕/'
     dirt=dirthead+dirt  
-    delaytime=5
+    delaytime=int(delay)
     global timestart
     global timeend
     global txt
@@ -66,7 +66,7 @@ def converttoass(dirtass):
      output.write('\n')
      for i in range(0,len(txt)):
           x1=str(random.randint(down,up))
-          y1=str(random.randint(20,300))
+          y1=str(random.randint(20,700))
           x2=str(-10)
           y2=y1
           Dialogue='Dialogue: 0,'+timestart[i]+','+timeend[i]+',R2L,,20,20,2,,{\move('+x1+','+y1+','+x2+','+y2+')}'+txt[i]
@@ -99,6 +99,10 @@ def converttoass(dirtass):
 '''
 if __name__ == '__main__':
     room_id = input('请输入需要转码的房间号:')
-    danmutoass(str(room_id)+'danmuass.txt')
+    delay=input('请输入字幕delay[默认8s]:')
+    if(delay==''):
+        danmutoass(str(room_id)+'danmuass.txt')
+    else:
+        danmutoass(str(room_id)+'danmuass.txt',delay)
     converttoass('/Users/lixiang/iCollections/Programe/Github/douyudanmu/弹幕/'+str(room_id)+'danmuass.ass')
-    print('转换完成!')
+    print('ass弹幕文件转换完成!')
