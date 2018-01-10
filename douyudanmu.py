@@ -16,7 +16,7 @@ import os
 import codecs
 import sys
 from termcolor import colored
-
+from pyfiglet import Figlet
 from threading import Thread
 
 def room_info(room_id):
@@ -128,7 +128,7 @@ def connectdanmuserver(room_id,opengift='1',enterroom='1',opentxt='1'):
             for nn in uenter.findall(data):
                     try:
                         if(nn.decode() in speciallist):
-                            print(colored("---【{}】进入房间---".format(nn.decode()),'green','on_blue',attrs=['reverse', 'blink','bold']),'\n')
+                            print(colored("---【{}】进入房间---".format(nn.decode()),'green','on_blue',attrs=['reverse', 'blink','bold']))
                         else:
                             print(colored("---【{}】进入房间---".format(nn.decode()),'green','on_blue'))
     
@@ -181,10 +181,17 @@ def isexist(path):
     if (isExists==True):
         print('删除原弹幕文件')
         os.remove(path)
+        
+def titleconvert(strfont):
+    font=strfont
+    f = Figlet(font='stop')
+    print (colored(f.renderText(font),'green',attrs=['bold']))
 
 if __name__ == '__main__':
-
-    room_id = input('请输入房间号:')
+    titleconvert('Douyu')
+    titleconvert('Danmu')
+    titleconvert(' V 2.0')
+    room_id = input(colored('请输入房间号:','green',attrs=['bold']))
     opentxt=input('是否开启弹幕(默认1 能 0 不能):')
     opengift=input('是否开启礼物(默认1 能 0 不能):')
     enterroom=input('是否开启进房提醒(默认1 能 0 不能):')
